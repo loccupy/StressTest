@@ -1,8 +1,6 @@
 import datetime
 from time import sleep
 
-# from eventlet import Timeout
-
 from libs.read_log import (read_time_correction_log, read_self_diagnostic_logs,
                            read_on_off_log, read_voltage_of_any_phase_for_ozz)
 from libs.write_file import write_file, message_in_out
@@ -15,7 +13,6 @@ def loop_after_exception(count, connect, counter_number, device_type):
     setting = res[1]
     reader = res[0]
     while i < 12:
-        # timeout_2 = Timeout(5, Exception)
         try:
             if not setting.media.isOpen():
                 setting.media.open()
@@ -45,13 +42,11 @@ def loop_after_exception(count, connect, counter_number, device_type):
             message_in_out(
                 f'>> Удачное соединение после {i}-го неудачного. Реальное время: {time_for_success}')
 
-            try:
-                reader.close()
-            except Exception as e:
-                print(e.args)
-                return i
+            reader.disconnect()
+            setting.media.close()
             break
         except Exception as e:
+            setting.media.close()
             i += 1
             if i == 5:
                 time_5 = str(datetime.datetime.now().replace(microsecond=0))
@@ -77,8 +72,6 @@ def loop_after_exception(count, connect, counter_number, device_type):
                 message_in_out(
                     f'Зависание ИПУ\n Ошибка >> {error_10} в {time_10}\n Итерация выкл/вкл №{count}')
             continue
-        # finally:
-        #     timeout_2.cancel()
     return i
 
 
@@ -87,70 +80,75 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
     res = connect
     setting = res[1]
     reader = res[0]
-    if i == 12:
-        sleep(10)
-        if not setting.media.isOpen():
-            setting.media.open()
-        reader.initializeConnection()
-        assert reader.deviceType == device_type
-        time_correction_log = read_time_correction_log(reader)
-        self_diagnostic_logs = read_self_diagnostic_logs(reader)
-        check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
-        on_off_logs = read_on_off_log(reader)
-        time_for_success = str(datetime.datetime.now().replace(microsecond=0))
+    try:
+        if i == 12:
+            sleep(10)
+            if not setting.media.isOpen():
+                setting.media.open()
+            reader.initializeConnection()
+            assert reader.deviceType == device_type
+            time_correction_log = read_time_correction_log(reader)
+            self_diagnostic_logs = read_self_diagnostic_logs(reader)
+            check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
+            on_off_logs = read_on_off_log(reader)
+            time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
-        write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
-                   f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
-                   f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
-                   f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
-                   f' Считываем логи журнала самодиагностики после ожидания в 10 сек (после цикла в 11 '
-                   f'неудачных подключений)\n'
-                   f'_________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
-                   f'{self_diagnostic_logs}\n\n'
-                   f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
-                   f'{check_phase_for_ozz}\n\n'
-                   f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
-                   f'{on_off_logs}\n\n'
-                   f' ____________________TIME CORRECTION LOG_________________________________\n '
-                   f'{time_correction_log}\n'
-                   f'_______________________________________________________________________\n\n\n\n'
-                   )
-        i = 0
-        reader.disconnect()
+            write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
+                       f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
+                       f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
+                       f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
+                       f' Считываем логи журнала самодиагностики после ожидания в 10 сек (после цикла в 11 '
+                       f'неудачных подключений)\n'
+                       f'_________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
+                       f'{self_diagnostic_logs}\n\n'
+                       f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
+                       f'{check_phase_for_ozz}\n\n'
+                       f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
+                       f'{on_off_logs}\n\n'
+                       f' ____________________TIME CORRECTION LOG_________________________________\n '
+                       f'{time_correction_log}\n'
+                       f'_______________________________________________________________________\n\n\n\n'
+                       )
+            i = 0
+            reader.disconnect()
+            setting.media.close()
+        else:
+            if not setting.media.isOpen():
+                setting.media.open()
+            reader.initializeConnection()
+            if reader.deviceType != device_type:
+                write_file(f'>> ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ\n'
+                           f'___________________________________________________________\n\n')
+                reader.close()
+                raise Exception("ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ")
+
+            time_correction_log = read_time_correction_log(reader)
+            on_off_logs = read_on_off_log(reader)
+            self_diagnostic_logs = read_self_diagnostic_logs(reader)
+            check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
+            time_for_success = str(datetime.datetime.now().replace(microsecond=0))
+
+            write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
+                       f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
+                       f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
+                       f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
+                       f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
+                       f'{self_diagnostic_logs}\n\n'
+                       f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
+                       f'{check_phase_for_ozz}\n\n'
+                       f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
+                       f'{on_off_logs}\n\n'
+                       f' ____________________TIME CORRECTION LOG_________________________________\n '
+                       f'{time_correction_log}\n'
+                       f'_______________________________________________________________________\n\n\n\n'
+                       )
+
+            reader.disconnect()
+            setting.media.close()
+            return i
+    except Exception as e:
         setting.media.close()
-    else:
-        if not setting.media.isOpen():
-            setting.media.open()
-        reader.initializeConnection()
-        if reader.deviceType != device_type:
-            write_file(f'>> ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ\n'
-                       f'___________________________________________________________\n\n')
-            reader.close()
-            raise Exception("ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ")
-
-        time_correction_log = read_time_correction_log(reader)
-        on_off_logs = read_on_off_log(reader)
-        self_diagnostic_logs = read_self_diagnostic_logs(reader)
-        check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
-        time_for_success = str(datetime.datetime.now().replace(microsecond=0))
-
-        write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
-                   f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
-                   f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
-                   f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
-                   f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
-                   f'{self_diagnostic_logs}\n\n'
-                   f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
-                   f'{check_phase_for_ozz}\n\n'
-                   f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
-                   f'{on_off_logs}\n\n'
-                   f' ____________________TIME CORRECTION LOG_________________________________\n '
-                   f'{time_correction_log}\n'
-                   f'_______________________________________________________________________\n\n\n\n'
-                   )
-
-        reader.close()
-        return i
+        raise
 
 
 def main_loop(connect, i, count, sleep_time_after_disconnect, sleep_time_after_reconnect, counter_number, device_type):

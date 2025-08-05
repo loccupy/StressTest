@@ -43,153 +43,160 @@ class Configuration:
 
 
 # Подключение к ведущему ведомому счетчику
-# @pytest.fixture
 def connection_for_leading_meter(com, baud, address, password):
     reader, settings = initialization(com=com, address=16 + address, baud=baud, password=password, ip=None)
     res = [reader, settings]
     return res
-    # try:
-    #     reader.close()
-    # except Exception as e:
-    #     print(e)
-    #     pass
 
 
-# Подключение к первому ведомому счетчику
-# @pytest.fixture
-def connection_for_1_wingman_meter():
+def connection_for_wingman_meter(config):
     try:
         if Configuration.com_for_1_meter:
-            reader, settings = initialization(com=Configuration.com_for_1_meter, address=16, baud=9600,
+            reader, settings = initialization(com=config, address=127, baud=9600,
                                               password='1234567898765432', ip=None)
             res = [reader, settings]
             return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
         else:
             return 1
     except Exception as e:
         print(e.args)
 
-
-# Подключение ко второму ведомому счетчику
-# @pytest.fixture
-def connection_for_2_wingman_meter():
-    try:
-        if Configuration.com_for_2_meter:
-            reader, settings = initialization(com=Configuration.com_for_2_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
-
-
-# Подключение к третьему ведомому счетчику
-# @pytest.fixture
-def connection_for_3_wingman_meter():
-    try:
-        if Configuration.com_for_3_meter:
-            reader, settings = initialization(com=Configuration.com_for_3_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
-
-
-# Подключение к четвертому ведомому счетчику
-# @pytest.fixture
-def connection_for_4_wingman_meter():
-    try:
-        if Configuration.com_for_4_meter:
-            reader, settings = initialization(com=Configuration.com_for_4_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
-
-
-# Подключение ко пятому ведомому счетчику
-# @pytest.fixture
-def connection_for_5_wingman_meter():
-    try:
-        if Configuration.com_for_5_meter:
-            reader, settings = initialization(com=Configuration.com_for_5_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
-
-
-# Подключение к шестому ведомому счетчику
-# @pytest.fixture
-def connection_for_6_wingman_meter():
-    try:
-        if Configuration.com_for_6_meter:
-            reader, settings = initialization(com=Configuration.com_for_6_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
-
-
-# Подключение к седьмому ведомому счетчику
-# @pytest.fixture
-def connection_for_7_wingman_meter():
-    try:
-        if Configuration.com_for_7_meter:
-            reader, settings = initialization(com=Configuration.com_for_7_meter, address=16, baud=9600,
-                                              password='1234567898765432', ip=None)
-            res = [reader, settings]
-            return res
-            # try:
-            #     reader.close()
-            # except Exception as e:
-            #     print(e)
-            #     pass
-        else:
-            return 1
-    except Exception as e:
-        print(e.args)
+#
+# # Подключение к первому ведомому счетчику
+# # @pytest.fixture
+# def connection_for_1_wingman_meter():
+#     try:
+#         if Configuration.com_for_1_meter:
+#             reader, settings = initialization(com=Configuration.com_for_1_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение ко второму ведомому счетчику
+# # @pytest.fixture
+# def connection_for_2_wingman_meter():
+#     try:
+#         if Configuration.com_for_2_meter:
+#             reader, settings = initialization(com=Configuration.com_for_2_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение к третьему ведомому счетчику
+# # @pytest.fixture
+# def connection_for_3_wingman_meter():
+#     try:
+#         if Configuration.com_for_3_meter:
+#             reader, settings = initialization(com=Configuration.com_for_3_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение к четвертому ведомому счетчику
+# # @pytest.fixture
+# def connection_for_4_wingman_meter():
+#     try:
+#         if Configuration.com_for_4_meter:
+#             reader, settings = initialization(com=Configuration.com_for_4_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение ко пятому ведомому счетчику
+# # @pytest.fixture
+# def connection_for_5_wingman_meter():
+#     try:
+#         if Configuration.com_for_5_meter:
+#             reader, settings = initialization(com=Configuration.com_for_5_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение к шестому ведомому счетчику
+# # @pytest.fixture
+# def connection_for_6_wingman_meter():
+#     try:
+#         if Configuration.com_for_6_meter:
+#             reader, settings = initialization(com=Configuration.com_for_6_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)
+#
+#
+# # Подключение к седьмому ведомому счетчику
+# # @pytest.fixture
+# def connection_for_7_wingman_meter():
+#     try:
+#         if Configuration.com_for_7_meter:
+#             reader, settings = initialization(com=Configuration.com_for_7_meter, address=16, baud=9600,
+#                                               password='1234567898765432', ip=None)
+#             res = [reader, settings]
+#             return res
+#             # try:
+#             #     reader.close()
+#             # except Exception as e:
+#             #     print(e)
+#             #     pass
+#         else:
+#             return 1
+#     except Exception as e:
+#         print(e.args)

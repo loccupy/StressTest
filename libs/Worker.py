@@ -52,25 +52,24 @@ class Worker(QThread):
             check_connect_for_lead_meter(emergency_connection_for_lead_meter,
                                          "Проверка запасного соединения с ведущим счетчиком")
 
-            connection_for_1_meter = connection_for_1_wingman_meter()
+            connection_for_1_meter = connection_for_wingman_meter(Configuration.com_for_1_meter)
             check_connect_for_wingman_meter(connection_for_1_meter, Configuration.com_for_1_meter,
                                             "Проверка соединения с первым счетчиком")
-            connection_for_2_meter = connection_for_2_wingman_meter()
+            connection_for_2_meter = connection_for_wingman_meter(Configuration.com_for_2_meter)
             check_connect_for_wingman_meter(connection_for_2_meter, Configuration.com_for_2_meter,
                                             "Проверка соединения со вторым счетчиком")
-            connection_for_3_meter = connection_for_3_wingman_meter()
+            connection_for_3_meter = connection_for_wingman_meter(Configuration.com_for_3_meter)
             check_connect_for_wingman_meter(connection_for_3_meter, Configuration.com_for_3_meter,
                                             "Проверка соединения с третьим счетчиком")
-            connection_for_4_meter = connection_for_4_wingman_meter()
+            connection_for_4_meter = connection_for_wingman_meter(Configuration.com_for_4_meter)
             check_connect_for_wingman_meter(connection_for_4_meter, Configuration.com_for_4_meter,
                                             "Проверка соединения с четвертым счетчиком")
-            connection_for_5_meter = connection_for_5_wingman_meter()
+            connection_for_5_meter = connection_for_wingman_meter(Configuration.com_for_5_meter)
             check_connect_for_wingman_meter(connection_for_5_meter, Configuration.com_for_5_meter,
                                             "Проверка соединения с пятым счетчиком")
-            connection_for_6_meter = connection_for_6_wingman_meter()
+            connection_for_6_meter = connection_for_wingman_meter(Configuration.com_for_6_meter)
             check_connect_for_wingman_meter(connection_for_6_meter, Configuration.com_for_6_meter,
                                             "Проверка соединения с шестым счетчиком")
-            # connection_for_7_meter = connection_for_7_wingman_meter()
 
             with open(Configuration.filename, "a", errors="ignore") as file:
                 file.write(
@@ -171,20 +170,6 @@ class Worker(QThread):
                     # подключение к шестому счетчику
                     i_6 = main_loop(connection_for_6_meter, i_6, count, sleep_time_after_disconnect,
                                     sleep_time_after_reconnect, "ШЕСТОЙ", Configuration.device_type_for_6_meter)
-
-                if self.running is False:
-                    print("Тест остановлен.")
-                    break
-
-                if Configuration.com_for_7_meter != "COM":
-                    # отсчитываем время после реконнекта для СЕДЬМОГО счетчика
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
-                    sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
-
-                    # подключение к седьмому счетчику
-                    i_7 = main_loop(connection_for_7_wingman_meter, i_7, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "СЕДЬМОЙ", Configuration.device_type_for_7_meter)
 
                 count += 1
                 # self.signal.emit("Тест выполняется...\n")

@@ -931,7 +931,7 @@ class GXDLMSClient(object):
         reply = None
         data = GXByteBuffer()
         attributeDescriptor = GXByteBuffer()
-        _GXCommon.setData(self.settings, data, type_, value, offset)
+        _GXCommon.setData(self.settings, data, type_, value)
         if self.useLogicalNameReferencing:
             attributeDescriptor.setUInt16(objectType)
             attributeDescriptor.set(_GXCommon.logicalNameToBytes(str(name)))

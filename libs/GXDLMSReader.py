@@ -627,10 +627,20 @@ class GXDLMSReader(GXDLMSDisconnectControl):
             self.readDataBlock(dc.remoteReconnect(self.client), reply)
 
     def relay_disconnect(self):
-        self.relay_actions(0)
+        try:
+            self.relay_actions(0)
+            print('Реле разомкнуто')
+        except Exception as e:
+            print(f"Ошибка при дисконнетке реле {e}")
+            raise e
 
     def relay_reconnect(self):
-        self.relay_actions(1)
+        try:
+            self.relay_actions(1)
+            print('Реле замкнуто')
+        except Exception as e:
+            print(f"Ошибка при реконнекте реле {e}")
+            raise e
 
     # convert date and time accounting difference 2 hours 59 munites 1 second
     def normalize_time(self, write_time):  # преобразует время формата datetime, вычитая 2 часа 59 минут 1 секунду
