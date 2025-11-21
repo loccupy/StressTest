@@ -34,6 +34,7 @@ def relay_reconnect_connect(base_connect, emergency_connect, count, sleep_time_a
                 setting.media.close()
                 break
             except Exception as e:
+                setting.media.close()
                 time = str(datetime.datetime.now())
                 write_file(f'>> Неудачное соединения во время дисконнекта-реконнекта реле №{x}!!! \n'
                            f' Ошибка {e.args}\n'
