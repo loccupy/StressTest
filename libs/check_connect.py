@@ -40,14 +40,14 @@ def check_connect_for_wingman_meter(connect, com, text):
             settings.media.open()
         reader.initializeConnection()
 
-        if reader.deviceType != 'TT':
-            relay = GXDLMSDisconnectControl("0.0.96.3.10.255")
-            if reader.read(relay, 4) != 2:
-                relay.controlMode = 2
-                reader.write(relay, 4)
-                print('Установлен режим реле 2')
-            reader.relay_disconnect()
-            reader.relay_reconnect()
+        # if reader.deviceType != 'TT':
+        #     relay = GXDLMSDisconnectControl("0.0.96.3.10.255")
+        #     if reader.read(relay, 4) != 2:
+        #         relay.controlMode = 2
+        #         reader.write(relay, 4)
+        #         print('Установлен режим реле 2')
+        #     reader.relay_disconnect()
+        #     reader.relay_reconnect()
 
         reader.close()
         print(f'{text} >> Соединение корректное')
