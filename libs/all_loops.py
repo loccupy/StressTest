@@ -2,7 +2,7 @@ import datetime
 from time import sleep
 
 from libs.read_log import (read_time_correction_log, read_self_diagnostic_logs,
-                           read_on_off_log, read_voltage_of_any_phase_for_ozz)
+                           read_on_off_log, read_voltage_of_any_phase_for_ozz, check_free_stack_space)
 from libs.write_file import write_file, message_in_out
 
 
@@ -23,6 +23,7 @@ def loop_after_exception(count, connect, counter_number, device_type):
             self_diagnostic_logs = read_self_diagnostic_logs(reader)
             check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
             on_off_logs = read_on_off_log(reader)
+            free_stack_space = check_free_stack_space(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
             write_file(f'>> Удачное соединение после {i}-го неудачного c № {number} \n'
@@ -36,6 +37,8 @@ def loop_after_exception(count, connect, counter_number, device_type):
                        f'{on_off_logs}\n\n'
                        f' ____________________TIME CORRECTION LOG_________________________________\n '
                        f'{time_correction_log}\n'
+                       f' ____________________FREE STACK SPACE_________________________________\n '
+                       f'{free_stack_space}\n'
                        f'_______________________________________________________________________\n\n\n\n'
                        )
 
@@ -91,6 +94,7 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
             self_diagnostic_logs = read_self_diagnostic_logs(reader)
             check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
             on_off_logs = read_on_off_log(reader)
+            free_stack_space = check_free_stack_space(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
             write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
@@ -107,6 +111,8 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
                        f'{on_off_logs}\n\n'
                        f' ____________________TIME CORRECTION LOG_________________________________\n '
                        f'{time_correction_log}\n'
+                       f' ____________________FREE STACK SPACE_________________________________\n '
+                       f'{free_stack_space}\n'
                        f'_______________________________________________________________________\n\n\n\n'
                        )
             i = 0
@@ -126,6 +132,7 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
             on_off_logs = read_on_off_log(reader)
             self_diagnostic_logs = read_self_diagnostic_logs(reader)
             check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
+            free_stack_space = check_free_stack_space(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
             write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
@@ -140,6 +147,8 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
                        f'{on_off_logs}\n\n'
                        f' ____________________TIME CORRECTION LOG_________________________________\n '
                        f'{time_correction_log}\n'
+                       f' ____________________FREE STACK SPACE_________________________________\n '
+                       f'{free_stack_space}\n'
                        f'_______________________________________________________________________\n\n\n\n'
                        )
 

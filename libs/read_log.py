@@ -3,7 +3,7 @@ from time import sleep
 
 import pandas as pd
 
-from gurux_dlms.objects import GXDLMSProfileGeneric, GXDLMSRegister
+from gurux_dlms.objects import GXDLMSProfileGeneric, GXDLMSRegister, GXDLMSData
 
 from libs.connecting import Configuration
 
@@ -65,6 +65,21 @@ def reset_on_off_log(reader):
         reader.reset_profile("0.0.99.98.2.255")
     except Exception as e:
         print(f"Невозможно очистить журнал вкл/выкл, ошибка {e.args}")
+
+
+def check_free_stack_space(reader):
+    try:
+        data = GXDLMSData("0.0.2.164.23.255")
+        free_stack_space = reader.read(data, 2)
+        if free_stack_space < 100:
+            txt = "ERROR!!! Свободное пространство стека менее 100: ", f"{free_stack_space}"
+        else:
+            txt = "Cвободное пространство стека в норме: ", f"{free_stack_space}"
+        return txt
+    except Exception as e:
+        print(f"Не получилось считать объект Контроль свободн простр стека, ошибка {e.args}")
+        txt = f"Не получилось считать объект Контроль свободн простр стека, ошибка {e.args}"
+        return txt
 
 
 def read_on_off_log(reader_for_tt):

@@ -1,3 +1,5 @@
+from time import sleep
+
 from gurux_dlms.objects import GXDLMSDisconnectControl
 
 
@@ -16,10 +18,12 @@ def check_connect_for_lead_meter(connect, text):
             reader.write(relay, 4)
             print('Установлен режим реле 2')
         reader.relay_disconnect()
+        sleep(3)
         reader.relay_reconnect()
 
         reader.close()
         print("Соединение корректное")
+        sleep(3)
     except Exception as e:
         settings.media.close()
         if text == "Проверка основного соединения с ведущим счетчиком":
@@ -51,6 +55,7 @@ def check_connect_for_wingman_meter(connect, com, text):
 
         reader.close()
         print(f'{text} >> Соединение корректное')
+        sleep(3)
     except Exception as e:
         settings.media.close()
         raise Exception(f'{text} >> Не удается установить соединение при проверке соединения с {text[-16:]}'
