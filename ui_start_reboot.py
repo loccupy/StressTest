@@ -526,7 +526,14 @@ class FileUploader(QWidget):
         self.setStyleSheet(dark_stylesheet)
 
     def closeEvent(self, event):
-        # Сохраняем настройки при закрытии приложения
+        # Блокируем повторный старт
+        self.start_checking.setEnabled(False)
+        self.worker.running = False
+        self.worker.wait(timeout=30000)
+        # Восстанавливаем вывод консоли
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+        # Сохраняем настройки при закрытии
         self.save_settings()
         super().closeEvent(event)
 
