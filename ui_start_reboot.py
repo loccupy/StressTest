@@ -29,6 +29,7 @@ class FileUploader(QWidget):
 
         self.worker = Worker()
         self.worker.signal.connect(self.update_text)
+        self.worker.finished.connect(lambda: self.start_checking.setEnabled(True))  # снимает блокировку «Пуск» и при естественном завершении потока
 
         # Добавляем поля ввода и чек боксы в секцию ввода данных
         self.fields = {}
@@ -447,17 +448,26 @@ class FileUploader(QWidget):
             if not self.check_fields():
                 return
 
+            # Защита от двойного запуска: если поток уже работает — не перезапускаем
+            if self.worker.isRunning():
+                return
+
             # Получаем все данные перед запуском
             all_data = self.get_all_data()
 
             # Отправляем данные в рабочий поток
             self.worker.set_input_data(all_data)
             self.worker.start()
+            
+            # Блокируем кнопку пуска во время работы теста
+            self.start_checking.setEnabled(False)
         except Exception as e:
             print(e)
 
     def stop_thread(self):
         self.worker.running = False
+        # Разблокируем кнопку пуска после остановки
+        self.start_checking.setEnabled(True)
         print("Тест скоро остановится...")
 
     def update_text(self, text):
