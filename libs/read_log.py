@@ -46,13 +46,22 @@ def read_self_diagnostic_logs(reader_for_tt):
             pg = GXDLMSProfileGeneric("0.0.99.98.7.255")
             reader_for_tt.read(pg, 3)
             entries_in_use = reader_for_tt.read(pg, 7)
+            # Журнал самодиагностики хранит 20 записей.
+            # Если записей меньше — сдвиг уходит в минус, что вызывает
+            # отрицательный индекс и падение или silent corruption.
+            if entries_in_use < 20:
+                return (
+                    f"Журнал самодиагностики: {entries_in_use} записи, "
+                    "требуется минимум 20"
+                )
             logs = reader_for_tt.readRowsByEntry(pg, entries_in_use - 19, 20)
             res = []
             for i in range(len(logs)):
                 res.append([logs[i][0].toFormatString(), logs[i][1], logs[i][2]])
+            if not res:
+                return "Журнал самодиагностики пуст — нет записей для отображения"
             headings = ["Время фиксации записи", "Событие самодиагностики", " Время работы ПУ"]
-            index = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-                     "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+            index = [str(i + 1) for i in range(len(res))]
             df = pd.DataFrame(res, columns=headings, index=index)
             return df
         else:
@@ -74,9 +83,9 @@ def check_free_stack_space(reader):
         data = GXDLMSData("0.0.2.164.23.255")
         free_stack_space = reader.read(data, 2)
         if free_stack_space < 100:
-            txt = "ERROR!!! Свободное пространство стека менее 100: ", f"{free_stack_space}"
+            txt = f"ERROR!!! Свободное пространство стека менее 100: {free_stack_space}"
         else:
-            txt = "Cвободное пространство стека в норме: ", f"{free_stack_space}"
+            txt = f"Свободное пространство стека в норме: {free_stack_space}"
         return txt
     except Exception as e:
         print(f"Не получилось считать объект Контроль свободн простр стека, ошибка {e.args}")
@@ -90,12 +99,20 @@ def read_on_off_log(reader_for_tt):
             pg = GXDLMSProfileGeneric("0.0.99.98.2.255")
             reader_for_tt.read(pg, 3)
             entries_in_use = reader_for_tt.read(pg, 7)
+            # Журнал вкл/выкл хранит 5 записей.
+            if entries_in_use < 5:
+                return (
+                    f"Журнал вкл/выкл: {entries_in_use} записи, "
+                    "требуется минимум 5"
+                )
             logs = reader_for_tt.readRowsByEntry(pg, entries_in_use - 4, 5)
             res = []
             for i in range(len(logs)):
                 res.append([logs[i][0].toFormatString(), logs[i][1], logs[i][2]])
+            if not res:
+                return "Журнал вкл/выкл пуст — нет записей для отображения"
             headings = ["Время фиксации записи", "Событие", "Время работы ПУ"]
-            index = ["1", "2", "3", "4", "5"]
+            index = [str(i + 1) for i in range(len(res))]
             df = pd.DataFrame(res, columns=headings, index=index)
             # reset_on_off_log(reader_for_tt) # при включении резет надо переделать на считывание 2-х записей
             return df
@@ -112,12 +129,20 @@ def read_time_correction_log(reader):
             pg = GXDLMSProfileGeneric("0.0.99.98.13.255")
             reader.read(pg, 3)
             entries_in_use = reader.read(pg, 7)
+            # Журнал коррекции времени хранит 4 записи.
+            if entries_in_use < 4:
+                return (
+                    f"Журнал коррекции времени: {entries_in_use} записи, "
+                    "требуется минимум 4"
+                )
             logs = reader.readRowsByEntry(pg, entries_in_use - 3, 4)
             res = []
             for i in range(len(logs)):
                 res.append([logs[i][0].toFormatString(), logs[i][1], logs[i][2]])
+            if not res:
+                return "Журнал коррекции времени пуст — нет записей для отображения"
             headings = ["Текущие дата и время", "Старое время", "Время работы ПУ"]
-            index = ["1", "2", "3", "4"]
+            index = [str(i + 1) for i in range(len(res))]
             df = pd.DataFrame(res, columns=headings, index=index)
             return df
         else:
