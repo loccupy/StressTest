@@ -392,7 +392,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ПЕРВОГО ведущего счетчика!",
+                        "Введите COM для ПЕРВОГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
@@ -401,7 +401,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ВТОРОГО ведущего счетчика!",
+                        "Введите COM для ВТОРОГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
@@ -410,7 +410,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ТРЕТЬЕГО ведущего счетчика!",
+                        "Введите COM для ТРЕТЬЕГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
@@ -419,7 +419,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ЧЕТВЕРТОГО ведущего счетчика!",
+                        "Введите COM для ЧЕТВЕРТОГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
@@ -428,7 +428,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ПЯТОГО ведущего счетчика!",
+                        "Введите COM для ПЯТОГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
@@ -437,7 +437,7 @@ class FileUploader(QWidget):
                     QMessageBox.warning(
                         self,
                         "Предупреждение",
-                        "Введите COM для ШЕСТОГО ведущего счетчика!",
+                        "Введите COM для ШЕСТОГО ведомого счетчика!",
                         QMessageBox.Ok
                     )
                     return False
