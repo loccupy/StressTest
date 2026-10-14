@@ -484,7 +484,6 @@ class FileUploader(QWidget):
         cursor.insertText(text)
         self.text_edit.setTextCursor(cursor)
         self.text_edit.ensureCursorVisible()
-        QApplication.processEvents()
 
     def applyDarkTheme(self):
         # Определяем стили для темной темы
