@@ -61,7 +61,7 @@ class GXDLMSReader(GXDLMSDisconnectControl):
     def close(self):
         # pylint: disable=broad-except
         if self.media and self.media.isOpen():
-            print("DisconnectRequest")
+            # print("DisconnectRequest")
             reply = GXReplyData()
             try:
                 # Release is call only for secured connections.
@@ -268,7 +268,7 @@ class GXDLMSReader(GXDLMSDisconnectControl):
                 self.client.ctoSChallenge = challenge
 
     def initializeConnection(self):
-        print("ReconnectRequest: " + str(self.client.standard))
+        # print("ReconnectRequest: " + str(self.client.standard))
         if self.client.ciphering.security != Security.NONE:
             print("Security: " + str(self.client.ciphering.security))
             print("System title: " + GXCommon.toHex(self.client.ciphering.systemTitle))
