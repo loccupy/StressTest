@@ -2,33 +2,21 @@ from libs.connecting import Configuration
 
 
 def parser_for_ui_data(all_data):
-    # Получение данных счетчиков
+    # Сброс всех ведомых счетчиков к значениям по умолчанию перед загрузкой новых.
+    # Без этого при снятии галочки N-го счетчика Configuration.com_for_N_meter
+    # сохраняло бы старое значение, и Worker.run() считал бы его включённым
+    # (bug: неочищенное состояние).
+    for n in range(1, 7):
+        setattr(Configuration, f"com_for_{n}_meter", "COM")
+        setattr(Configuration, f"device_type_for_{n}_meter", "3PH")
+
+    # Получение данных ведомых счетчиков (1–6)
     labels = ["Включить 1-ый ведомый счетчик", "Включить 2-ый ведомый счетчик", "Включить 3-ый ведомый счетчик",
               "Включить 4-ый ведомый счетчик", "Включить 5-ый ведомый счетчик", "Включить 6-ый ведомый счетчик"]
 
-    # meter1_enabled = all_data['meter_data'][labels[0]]['enabled']
-    meter1_com_port = all_data['meter_data'][labels[0]]['com_port']
-    meter1_type = all_data['meter_data'][labels[0]]['type']
-
-    # meter2_enabled = all_data['meter_data'][labels[1]]['enabled']
-    meter2_com_port = all_data['meter_data'][labels[1]]['com_port']
-    meter2_type = all_data['meter_data'][labels[1]]['type']
-
-    # meter3_enabled = all_data['meter_data'][labels[2]]['enabled']
-    meter3_com_port = all_data['meter_data'][labels[2]]['com_port']
-    meter3_type = all_data['meter_data'][labels[2]]['type']
-
-    # meter4_enabled = all_data['meter_data'][labels[3]]['enabled']
-    meter4_com_port = all_data['meter_data'][labels[3]]['com_port']
-    meter4_type = all_data['meter_data'][labels[3]]['type']
-
-    # meter5_enabled = all_data['meter_data'][labels[4]]['enabled']
-    meter5_com_port = all_data['meter_data'][labels[4]]['com_port']
-    meter5_type = all_data['meter_data'][labels[4]]['type']
-
-    # meter6_enabled = all_data['meter_data'][labels[5]]['enabled']
-    meter6_com_port = all_data['meter_data'][labels[5]]['com_port']
-    meter6_type = all_data['meter_data'][labels[5]]['type']
+    meter_data = all_data['meter_data']
+    meter_com_ports = [meter_data[label]['com_port'] for label in labels]
+    meter_types = [meter_data[label]['type'] for label in labels]
 
     # Получение данных журналов
     log_checkboxes = ["Журнал диагностики", "Журнал вкл/выкл", "Журнал коррекции времени", "Журнал напряжения"]
@@ -97,34 +85,14 @@ def parser_for_ui_data(all_data):
     Configuration.flag_for_self_diagnostic_log = diagnostic_log_enabled
     Configuration.flag_for_read_voltage_for_ozz = voltage_log_enabled
 
-    if meter1_com_port != 'COM':
-        Configuration.com_for_1_meter = meter1_com_port
-    if meter1_type != '':
-        Configuration.device_type_for_1_meter = meter1_type
-
-    if meter2_com_port != 'COM':
-        Configuration.com_for_2_meter = meter2_com_port
-    if meter2_type != '':
-        Configuration.device_type_for_2_meter = meter2_type
-
-    if meter3_com_port != 'COM':
-        Configuration.com_for_3_meter = meter3_com_port
-    if meter3_type != '':
-        Configuration.device_type_for_3_meter = meter3_type
-
-    if meter4_com_port != 'COM':
-        Configuration.com_for_4_meter = meter4_com_port
-    if meter4_type != '':
-        Configuration.device_type_for_4_meter = meter4_type
-
-    if meter5_com_port != 'COM':
-        Configuration.com_for_5_meter = meter5_com_port
-    if meter5_type != '':
-        Configuration.device_type_for_5_meter = meter5_type
-
-    if meter6_com_port != 'COM':
-        Configuration.com_for_6_meter = meter6_com_port
-    if meter6_type != '':
-        Configuration.device_type_for_6_meter = meter6_type
+    # Ведомые счетчики 1–6 — цикл вместо шести повторяющихся блоков
+    for idx in range(6):
+        n = idx + 1
+        com_port = meter_com_ports[idx]
+        meter_type = meter_types[idx]
+        if com_port != 'COM':
+            setattr(Configuration, f"com_for_{n}_meter", com_port)
+        if meter_type != '':
+            setattr(Configuration, f"device_type_for_{n}_meter", meter_type)
 
     # return conf

@@ -38,9 +38,6 @@ class Configuration:
     com_for_6_meter = "COM"
     device_type_for_6_meter = "3PH"
 
-    com_for_7_meter = "COM"
-    device_type_for_7_meter = "3PH"
-
 
 # Подключение к ведущему ведомому счетчику
 def connection_for_leading_meter(com, baud, address, password):
@@ -168,26 +165,6 @@ def connection_for_wingman_meter(config):
 #     try:
 #         if Configuration.com_for_6_meter:
 #             reader, settings = initialization(com=Configuration.com_for_6_meter, address=16, baud=9600,
-#                                               password='1234567898765432', ip=None)
-#             res = [reader, settings]
-#             return res
-#             # try:
-#             #     reader.close()
-#             # except Exception as e:
-#             #     print(e)
-#             #     pass
-#         else:
-#             return 1
-#     except Exception as e:
-#         print(e.args)
-#
-#
-# # Подключение к седьмому ведомому счетчику
-# # @pytest.fixture
-# def connection_for_7_wingman_meter():
-#     try:
-#         if Configuration.com_for_7_meter:
-#             reader, settings = initialization(com=Configuration.com_for_7_meter, address=16, baud=9600,
 #                                               password='1234567898765432', ip=None)
 #             res = [reader, settings]
 #             return res

@@ -64,7 +64,7 @@ class Worker(QThread):
                 device_type = getattr(Configuration, device_type_attr)
                 wingman_connections.append((connect_res, com_attr, device_type))
 
-            with open(Configuration.filename, "a", errors="ignore") as file:
+            with open(Configuration.filename, "a", errors="ignore", encoding="utf-8") as file:
                 file.write(
                     f'***************NEW TEST in {str(datetime.now().replace(microsecond=0))}***************\n\n')
 
@@ -78,9 +78,13 @@ class Worker(QThread):
 
                 original_time_after_reconnect = sleep_time_after_reconnect
 
-                # дисконнект-реконнект ведущего счетчика
-                relay_reconnect_connect(base_connection_for_lead_meter, emergency_connection_for_lead_meter, count,
-                                        sleep_time_after_disconnect, sleep_time_after_reconnect)
+                # дисконнект-реконнект ведущего счетчика.
+                # Возвращённая пара сохраняет перманентное переключение на резервный канал
+                # (RS) между итерациями цикла: если основной канал отказал, следующая итерация
+                # уже использует RS как основной, а не бьётся об тот же оптопорт (P0 №1).
+                base_connection_for_lead_meter, emergency_connection_for_lead_meter = relay_reconnect_connect(
+                    base_connection_for_lead_meter, emergency_connection_for_lead_meter, count,
+                    sleep_time_after_disconnect, sleep_time_after_reconnect)
 
                 start_time = time.time()
 

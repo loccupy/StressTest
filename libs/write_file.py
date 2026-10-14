@@ -19,4 +19,4 @@ def write_file(string):
         with open(Configuration.filename, "a", errors="ignore", encoding='utf-8') as file:
             file.write(string)
     except Exception as e:
-        print(f"Не получилось вывести сообщение в терминал или записать в excel_file, ошибка {e.args}")
+        print(f"Не получилось вывести сообщение в терминал или записать в log файл, ошибка {e.args}")

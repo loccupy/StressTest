@@ -37,6 +37,7 @@ def read_voltage_of_any_phase_for_ozz(reader):
             return "Считывание напряжения выключено"
     except Exception as e:
         print(f"Невозможно считать журнал напряжения, ошибка {e.args}")
+        return f"Ошибка чтения журнала напряжения: {e.args}"
 
 
 def read_self_diagnostic_logs(reader_for_tt):
@@ -58,6 +59,7 @@ def read_self_diagnostic_logs(reader_for_tt):
             return "Считывание журнала выключено"
     except Exception as e:
         print(f"Невозможно считать журнал самодиагностики, ошибка {e.args}")
+        return f"Ошибка чтения журнала самодиагностики: {e.args}"
 
 
 def reset_on_off_log(reader):
@@ -101,6 +103,7 @@ def read_on_off_log(reader_for_tt):
             return "Считывание журнала выключено"
     except Exception as e:
         print(f"Невозможно считать журнал вкл/выкл, ошибка {e.args}")
+        return f"Ошибка чтения журнала вкл/выкл: {e.args}"
 
 
 def read_time_correction_log(reader):
@@ -121,3 +124,4 @@ def read_time_correction_log(reader):
             return "Считывание журнала выключено"
     except Exception as e:
         print(f"Невозможно считать журнал коррекции времени, ошибка {e.args}")
+        return f"Ошибка чтения журнала коррекции времени: {e.args}"

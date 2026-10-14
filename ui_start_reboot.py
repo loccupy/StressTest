@@ -269,96 +269,28 @@ class FileUploader(QWidget):
         self.aux_com_port_field.setValidator(QIntValidator())
 
     def create_meter_rows(self):
-        checkbox_1 = self.findChild(QtWidgets.QCheckBox, 'first_check')
-        com_port_field_1 = self.findChild(QtWidgets.QLineEdit, 'first_com')
-        com_port_field_1.setEnabled(False)
+        """Создать строки ведомых счетчиков: цикл по 6 блокам виджетов."""
+        ui_names = [
+            ('first_check', 'first_com', 'first_type'),
+            ('second_check', 'second_com', 'second_type'),
+            ('third_check', 'third_com', 'third_type'),
+            ('forth_check', 'forth_com', 'forth_type'),
+            ('fifth_check', 'fifth_com', 'fifth_type'),
+            ('sixth_check', 'sixth_com', 'sixth_type'),
+        ]
+        for idx, (chk_name, com_name, typ_name) in enumerate(ui_names):
+            checkbox = self.findChild(QtWidgets.QCheckBox, chk_name)
+            com_field = self.findChild(QtWidgets.QLineEdit, com_name)
+            com_field.setEnabled(False)
+            checkbox.stateChanged.connect(
+                lambda checked, cb=checkbox, fd=com_field: self.toggle_input_field(cb, fd)
+            )
+            type_field = self.findChild(QtWidgets.QComboBox, typ_name)
+            type_field.setEditable(False)
 
-        checkbox_1.stateChanged.connect(
-            lambda checked, cb=checkbox_1, fd=com_port_field_1: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_1 = self.findChild(QtWidgets.QComboBox, 'first_type')
-        meter_type_field_1.setEditable(False)
-
-
-        self.fields['check_0'] = checkbox_1
-        self.fields['com_0'] = com_port_field_1
-        self.fields['type_0'] = meter_type_field_1
-
-        checkbox_2 = self.findChild(QtWidgets.QCheckBox, 'second_check')
-        com_port_field_2 = self.findChild(QtWidgets.QLineEdit, 'second_com')
-        com_port_field_2.setEnabled(False)
-
-        checkbox_2.stateChanged.connect(
-            lambda checked, cb=checkbox_2, fd=com_port_field_2: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_2 = self.findChild(QtWidgets.QComboBox, 'second_type')
-        meter_type_field_2.setEditable(False)
-
-        self.fields['check_1'] = checkbox_2
-        self.fields['com_1'] = com_port_field_2
-        self.fields['type_1'] = meter_type_field_2
-
-        checkbox_3 = self.findChild(QtWidgets.QCheckBox, 'third_check')
-        com_port_field_3 = self.findChild(QtWidgets.QLineEdit, 'third_com')
-        com_port_field_3.setEnabled(False)
-
-        checkbox_3.stateChanged.connect(
-            lambda checked, cb=checkbox_3, fd=com_port_field_3: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_3 = self.findChild(QtWidgets.QComboBox, 'third_type')
-        meter_type_field_3.setEditable(False)
-
-        self.fields['check_2'] = checkbox_3
-        self.fields['com_2'] = com_port_field_3
-        self.fields['type_2'] = meter_type_field_3
-
-        checkbox_4 = self.findChild(QtWidgets.QCheckBox, 'forth_check')
-        com_port_field_4 = self.findChild(QtWidgets.QLineEdit, 'forth_com')
-        com_port_field_4.setEnabled(False)
-
-        checkbox_4.stateChanged.connect(
-            lambda checked, cb=checkbox_4, fd=com_port_field_4: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_4 = self.findChild(QtWidgets.QComboBox, 'forth_type')
-        meter_type_field_4.setEditable(False)
-
-        self.fields['check_3'] = checkbox_4
-        self.fields['com_3'] = com_port_field_4
-        self.fields['type_3'] = meter_type_field_4
-
-        checkbox_5 = self.findChild(QtWidgets.QCheckBox, 'fifth_check')
-        com_port_field_5 = self.findChild(QtWidgets.QLineEdit, 'fifth_com')
-        com_port_field_5.setEnabled(False)
-
-        checkbox_5.stateChanged.connect(
-            lambda checked, cb=checkbox_5, fd=com_port_field_5: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_5 = self.findChild(QtWidgets.QComboBox, 'fifth_type')
-        meter_type_field_5.setEditable(False)
-
-        self.fields['check_4'] = checkbox_5
-        self.fields['com_4'] = com_port_field_5
-        self.fields['type_4'] = meter_type_field_5
-
-        checkbox_6 = self.findChild(QtWidgets.QCheckBox, 'sixth_check')
-        com_port_field_6 = self.findChild(QtWidgets.QLineEdit, 'sixth_com')
-        com_port_field_6.setEnabled(False)
-
-        checkbox_6.stateChanged.connect(
-            lambda checked, cb=checkbox_6, fd=com_port_field_6: self.toggle_input_field(cb, fd)
-        )
-
-        meter_type_field_6 = self.findChild(QtWidgets.QComboBox, 'sixth_type')
-        meter_type_field_6.setEditable(False)
-
-        self.fields[f'check_5'] = checkbox_6
-        self.fields[f'com_5'] = com_port_field_6
-        self.fields[f'type_5'] = meter_type_field_6
+            self.fields[f'check_{idx}'] = checkbox
+            self.fields[f'com_{idx}'] = com_field
+            self.fields[f'type_{idx}'] = type_field
 
     # Создаем метод для управления состоянием поля ввода
     def toggle_input_field(self, checkbox, field):
@@ -369,77 +301,27 @@ class FileUploader(QWidget):
             field.clear()  # Очищаем поле при отключении
 
     def check_fields(self):
+        """Проверить заполненность COM-портов перед запуском теста.
+
+        Цикл по range(6) с ординарными словами для сообщений об ошибках;
+        каждый чекбокс проверяется только при включённом состоянии:
+        если включён — COM должен быть непустым.
+        """
+        ordinal_words = ["ПЕРВЫМ", "ВТОРЫМ", "ТРЕТЬИМ", "ЧЕТВЕРТЫМ", "ПЯТЫМ", "ШЕСТЫМ"]
         if not self.main_com_port_field.text().strip():
-            # Показываем предупреждение
-            QMessageBox.warning(
-                self,
-                "Предупреждение",
-                "Введите COM основного соединения!",
-                QMessageBox.Ok
-            )
+            QMessageBox.warning(self, "Предупреждение",
+                                "Введите COM основного соединения!", QMessageBox.Ok)
             return False
         elif not self.main_speed_field.text().strip():
-            # Показываем предупреждение
-            QMessageBox.warning(
-                self,
-                "Предупреждение",
-                "Введите скорость основного соединения!",
-                QMessageBox.Ok
-            )
+            QMessageBox.warning(self, "Предупреждение",
+                                "Введите скорость основного соединения!", QMessageBox.Ok)
             return False
-        if self.fields.get('check_0', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_0', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ПЕРВОГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
-                    return False
-        if self.fields.get('check_1', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_1', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ВТОРОГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
-                    return False
-        if self.fields.get('check_2', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_2', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ТРЕТЬЕГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
-                    return False
-        if self.fields.get('check_3', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_3', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ЧЕТВЕРТОГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
-                    return False
-        if self.fields.get('check_4', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_4', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ПЯТОГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
-                    return False
-        if self.fields.get('check_5', QtWidgets.QCheckBox).isChecked():
-                if not self.fields.get(f'com_5', QLineEdit()).text():
-                    QMessageBox.warning(
-                        self,
-                        "Предупреждение",
-                        "Введите COM для ШЕСТОГО ведомого счетчика!",
-                        QMessageBox.Ok
-                    )
+        for idx in range(6):
+            if self.fields.get(f'check_{idx}', QtWidgets.QCheckBox).isChecked():
+                if not self.fields.get(f'com_{idx}', QLineEdit()).text():
+                    QMessageBox.warning(self, "Предупреждение",
+                                        f"Введите COM для {ordinal_words[idx]} ведо\u043c"
+                                        f"ого счетчика!", QMessageBox.Ok)
                     return False
         return True
 

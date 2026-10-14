@@ -48,6 +48,11 @@ def relay_reconnect_connect(base_connect, emergency_connect, count, sleep_time_a
                 continue
 
         sleep(sleep_time_after_reconnect)
+        # Возвращаем пару (основное, резервное) соединения. Если внутри функции произошёл
+        # swap из-за отказа основного канала, возвращённые ссылки уже поменяны местами, и
+        # вызывающий код сохраняет переключение на резервный канал (RS) между итерациями
+        # теста. Без возврата swap терялся по выходе из функции (исправление P0 №1).
+        return base_connect, emergency_connect
     except Exception as e:
         print(f'Ошибка при установке реле {e}')
         raise e
