@@ -39,7 +39,7 @@ class GXDLMSReader(GXDLMSDisconnectControl):
     def disconnect(self):
         # pylint: disable=broad-except
         if self.media and self.media.isOpen():
-            print("DisconnectRequest")
+            # print("DisconnectRequest")
             reply = GXReplyData()
             self.readDLMSPacket(self.client.disconnectRequest(), reply)
 
