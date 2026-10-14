@@ -30,13 +30,8 @@ class Worker(QThread):
         try:
             parser_for_ui_data(self.input_data)
 
-            i_1 = 0
-            i_2 = 0
-            i_3 = 0
-            i_4 = 0
-            i_5 = 0
-            i_6 = 0
-            i_7 = 0
+            # Список состояний i для ведомых счётчиков (1–6)
+            i_values = [0] * 7  # i_values[n] — состояние i для n-го счётчика
 
             base_connection_for_lead_meter = connection_for_leading_meter(Configuration.base_connect[0],
                                                                           Configuration.base_connect[1],
@@ -52,24 +47,22 @@ class Worker(QThread):
             check_connect_for_lead_meter(emergency_connection_for_lead_meter,
                                          "Проверка запасного соединения с ведущим счетчиком")
 
-            connection_for_1_meter = connection_for_wingman_meter(Configuration.com_for_1_meter)
-            check_connect_for_wingman_meter(connection_for_1_meter, Configuration.com_for_1_meter,
-                                            "Проверка соединения с первым счетчиком")
-            connection_for_2_meter = connection_for_wingman_meter(Configuration.com_for_2_meter)
-            check_connect_for_wingman_meter(connection_for_2_meter, Configuration.com_for_2_meter,
-                                            "Проверка соединения со вторым счетчиком")
-            connection_for_3_meter = connection_for_wingman_meter(Configuration.com_for_3_meter)
-            check_connect_for_wingman_meter(connection_for_3_meter, Configuration.com_for_3_meter,
-                                            "Проверка соединения с третьим счетчиком")
-            connection_for_4_meter = connection_for_wingman_meter(Configuration.com_for_4_meter)
-            check_connect_for_wingman_meter(connection_for_4_meter, Configuration.com_for_4_meter,
-                                            "Проверка соединения с четвертым счетчиком")
-            connection_for_5_meter = connection_for_wingman_meter(Configuration.com_for_5_meter)
-            check_connect_for_wingman_meter(connection_for_5_meter, Configuration.com_for_5_meter,
-                                            "Проверка соединения с пятым счетчиком")
-            connection_for_6_meter = connection_for_wingman_meter(Configuration.com_for_6_meter)
-            check_connect_for_wingman_meter(connection_for_6_meter, Configuration.com_for_6_meter,
-                                            "Проверка соединения с шестым счетчиком")
+            # Подключение и проверка ведомых счётчиков
+            wingman_connections = []  # [(connect_result, com_attr, device_type), ...]
+            ordinal_names = ["", "ПЕРВЫЙ", "ВТОРОЙ", "ТРЕТИЙ", "ЧЕТВЕРТЫЙ", "ПЯТЫЙ", "ШЕСТОЙ"]
+            # Дательный падеж для текста проверки соединения (как в оригинале)
+            check_names = ["", "первым", "вторым", "третьим", "четвертым", "пятым", "шестым"]
+            for meter_num in range(1, 7):
+                com_attr = f"com_for_{meter_num}_meter"
+                device_type_attr = f"device_type_for_{meter_num}_meter"
+                if getattr(Configuration, com_attr) == "COM":
+                    wingman_connections.append((None, None, None))  # пропуск незаданного
+                    continue
+                connect_res = connection_for_wingman_meter(getattr(Configuration, com_attr))
+                check_connect_for_wingman_meter(connect_res, getattr(Configuration, com_attr),
+                                                f"Проверка соединения с {check_names[meter_num]} счетчиком")
+                device_type = getattr(Configuration, device_type_attr)
+                wingman_connections.append((connect_res, com_attr, device_type))
 
             with open(Configuration.filename, "a", errors="ignore") as file:
                 file.write(
@@ -95,81 +88,31 @@ class Worker(QThread):
                     print("Тест остановлен.")
                     break
 
-                if Configuration.com_for_1_meter != "COM":
-                    # подключение к первому счетчику
+                # Цикл по ведомым счётчикам (1–6)
+                for meter_num in range(1, 7):
+                    conn_res, com_attr, device_type = wingman_connections[meter_num - 1]
+                    if conn_res is None:
+                        # счётчик не задан — пропускаем
+                        continue
 
-                    i_1 = main_loop(connection_for_1_meter, i_1, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ПЕРВЫЙ", Configuration.device_type_for_1_meter)
-
-                if self.running is False:
-                    print("Тест остановлен.")
-                    break
-
-                if Configuration.com_for_2_meter != "COM":
-                    # отсчитываем время после реконнекта для второго счетчика
+                    # отсчитываем время после реконнекта
                     end_time = time.time()
                     elapsed_time = end_time - start_time
                     sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
 
-                    # подключение ко второму счетчику
-                    i_2 = main_loop(connection_for_2_meter, i_2, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ВТОРОЙ", Configuration.device_type_for_2_meter)
+                    # цикл main_loop для счётчика
+                    i_values[meter_num] = main_loop(conn_res, i_values[meter_num], count,
+                                                    sleep_time_after_disconnect,
+                                                    sleep_time_after_reconnect,
+                                                    ordinal_names[meter_num], device_type)
+
+                    if self.running is False:
+                        print("Тест остановлен.")
+                        break
 
                 if self.running is False:
                     print("Тест остановлен.")
                     break
-
-                if Configuration.com_for_3_meter != "COM":
-                    # отсчитываем время после реконнекта для третьего счетчика
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
-                    sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
-
-                    # подключение к третьему счетчику
-                    i_3 = main_loop(connection_for_3_meter, i_3, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ТРЕТИЙ", Configuration.device_type_for_3_meter)
-
-                if self.running is False:
-                    print("Тест остановлен.")
-                    break
-
-                if Configuration.com_for_4_meter != "COM":
-                    # отсчитываем время после реконнекта для четвертого счетчика
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
-                    sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
-
-                    # подключение к четвертому счетчику
-                    i_4 = main_loop(connection_for_4_meter, i_4, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ЧЕТВЕРТЫЙ", Configuration.device_type_for_4_meter)
-
-                if self.running is False:
-                    print("Тест остановлен.")
-                    break
-
-                if Configuration.com_for_5_meter != "COM":
-                    # отсчитываем время после реконнекта для ПЯТОГО счетчика
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
-                    sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
-
-                    # подключение ко пятому счетчику
-                    i_5 = main_loop(connection_for_5_meter, i_5, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ПЯТЫЙ", Configuration.device_type_for_5_meter)
-
-                if self.running is False:
-                    print("Тест остановлен.")
-                    break
-
-                if Configuration.com_for_6_meter != "COM":
-                    # отсчитываем время после реконнекта для ШЕСТОГО счетчика
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
-                    sleep_time_after_reconnect = original_time_after_reconnect + int(elapsed_time)
-
-                    # подключение к шестому счетчику
-                    i_6 = main_loop(connection_for_6_meter, i_6, count, sleep_time_after_disconnect,
-                                    sleep_time_after_reconnect, "ШЕСТОЙ", Configuration.device_type_for_6_meter)
 
                 count += 1
                 # self.signal.emit("Тест выполняется...\n")
