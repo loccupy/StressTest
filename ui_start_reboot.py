@@ -528,11 +528,37 @@ class FileUploader(QWidget):
     def closeEvent(self, event):
         # Блокируем повторный старт
         self.start_checking.setEnabled(False)
+
+        # 1. Просим поток остановиться (run() переопределён вручную,
+        #    quit() на нём не работает — только флаг running=False).
         self.worker.running = False
-        self.worker.wait(timeout=30000)
-        # Восстанавливаем вывод консоли
+
+        # 2. Отвязываем слоты ДО ожидания: иначе накопленные кросс-поточные
+        #    очередь-сигналы worker.signal / stream.textWritten будут
+        #    доставлены в QTextEdit уже во время разрушения виджетов.
+        try:
+            self.worker.signal.disconnect(self.update_text)
+        except (RuntimeError, TypeError):
+            pass
+        if hasattr(self, "stream"):
+            try:
+                self.stream.textWritten.disconnect(self.on_text_written)
+            except (RuntimeError, TypeError):
+                pass
+
+        # 3. Дожидаемся реального завершения потока. Если за 3 сек он не
+        #    завершился (сидит в блокирующем IO) — принудительно снимаем,
+        #    чтобы QThread НЕ был уничтожен работающим (это и даёт fastfail
+        #    0xC0000409 при выходе из приложения).
+        if not self.worker.wait(3000):
+            self.worker.terminate()
+            self.worker.wait(2000)
+
+        # 4. Поток гарантированно остановлен — теперь безопасно возвращаем
+        #    дескрипторы вывода консоли.
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
+
         # Сохраняем настройки при закрытии
         self.save_settings()
         super().closeEvent(event)
