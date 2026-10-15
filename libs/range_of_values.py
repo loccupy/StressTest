@@ -1,0 +1,159 @@
+from random import randint
+from enum import Enum
+
+from gurux_dlms.enums import DataType
+from gurux_dlms import GXUInt8
+from gurux_dlms.objects import GXDLMSRegister, GXDLMSLimiter
+
+class RangeOfValues(Enum):
+    POWER_DATA_TYPE = DataType.UINT8
+    POWER_NORMAL_THRESHOLD_1PH = [100000, 30000000]# или 0
+    POWER_NORMAL_THRESHOLD_3PH = [100000, 90000000]# или 0UInt32
+
+    CURRENT_DATA_TYPE = DataType.UINT8
+    CURRENT_NORMAL_THRESHOLD = [0, 255]
+
+    VOLTAGE_DATA_TYPE = DataType.UINT32
+    VOLTAGE_NORMAL_THRESHOLD = [0, 255]
+
+    MAGNETIC_DATA_TYPE = DataType.UINT8
+    MAGNETIC_NORMAL_THRESHOLD = [1, 0]
+
+    IMBALANCE_DATA_TYPE = DataType.UINT16
+    IMBALANCE_NORMAL_THRESHOLD = [0, 50]
+
+    TEMPERATURE_DATA_TYPE = DataType.INT16
+    TEMPERATURE_NORMAL_THRESHOLD = [0, 50]
+
+    THRESHOLD_DURATION_MIN_OVER = [0, 7200]
+    THRESHOLD_DURATION_MIN_UNDER = [5, 7200]
+
+class Limiters:
+
+    def __init__(self, obis, meter_type):
+        self.obis = obis
+        self.data = GXDLMSLimiter(obis)
+        self.threshold_duration_min_over = RangeOfValues.THRESHOLD_DURATION_MIN_OVER
+        self.threshold_duration_min_under = RangeOfValues.THRESHOLD_DURATION_MIN_UNDER
+        if obis == "0.0.17.0.0.255":
+            self.name = "Ограничитель мощности"
+            self.data_type = RangeOfValues.POWER_DATA_TYPE
+            if meter_type == "1PH":
+                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_1PH
+            else:
+                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_3PH
+        elif obis == "0.0.17.0.1.255":
+            self.name = "Ограничитель тока"
+            self.data_type = RangeOfValues.CURRENT_DATA_TYPE
+            self.normal_threshold = RangeOfValues.CURRENT_NORMAL_THRESHOLD
+        elif obis == "0.0.17.0.2.255":
+            self.name = "Ограничитель напряжения"
+            self.data_type = RangeOfValues.VOLTAGE_DATA_TYPE
+            self.normal_threshold = RangeOfValues.VOLTAGE_NORMAL_THRESHOLD
+        elif obis == "0.0.17.0.3.255":
+            self.name = "Ограничитель по магнитному полю"
+            self.data_type = RangeOfValues.MAGNETIC_DATA_TYPE
+            self.normal_threshold = RangeOfValues.MAGNETIC_NORMAL_THRESHOLD
+        elif obis == "0.0.17.0.4.255":
+            self.name = "Ограничитель по не балансу токов"
+            self.data_type = RangeOfValues.IMBALANCE_DATA_TYPE
+            self.normal_threshold = RangeOfValues.IMBALANCE_NORMAL_THRESHOLD
+        elif obis == "0.0.17.0.5.255":
+            self.name = "Ограничитель по температуре"
+            self.data_type = RangeOfValues.TEMPERATURE_DATA_TYPE
+            self.normal_threshold = RangeOfValues.TEMPERATURE_NORMAL_THRESHOLD
+
+    def read_normal_threshold(self, reader):
+        data = self.data
+        result = reader.read(data, 4)
+        return result
+
+    def read_threshold_duration_min_over(self, reader):
+        data = self.data
+        result = reader.read(data, 6)
+        return result
+
+    def read_threshold_duration_min_under(self, reader):
+        data = self.data
+        result = reader.read(data, 7)
+        return result
+
+    def set_normal_threshold(self, reader):
+        data = self.data
+        data_type = self.data_type
+
+        value = self._get_random_value(4)
+
+        if self.obis == "0.0.17.0.1.255":
+            data_register = GXDLMSRegister("1.0.11.134.0.255")
+            reader.read(data_register, 2)
+            data_register.value = GXUInt8(value)
+            reader.write(data_register, 2)
+            actual_result = reader.read(data_register, 2)
+
+            if actual_result == value:
+                print(f"Уровень лимита по току установлено на {value}%.")
+
+            actual_normal_threshold = reader.read(data, 4)
+            maximum_current = reader.read(GXDLMSRegister("1.0.0.6.3.255"), 2)
+            result = maximum_current * value / 100
+
+            if actual_normal_threshold == result:
+                print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+
+        elif self.obis == "0.0.17.0.2.255":
+            data_register = GXDLMSRegister("1.0.12.134.0.255")
+            reader.read(data_register, 2)
+            data_register.value = GXUInt8(value)
+            reader.write(data_register, 2)
+            actual_result = reader.read(data_register, 2)
+
+            if actual_result == value:
+                print(f"Уровень лимита по напряжению установлено на {value}%.")
+
+            actual_normal_threshold = reader.read(data, 4)
+            nominal_voltage = reader.read(GXDLMSRegister("1.0.0.6.0.255"), 2)
+            result = nominal_voltage * value / 100
+
+            if actual_normal_threshold == result:
+                print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+
+        else:
+            data.thresholdNormal = value
+            data.setDataType(4, data_type)
+
+            reader.write(data, 4)
+            result = reader.read(data, 4)
+            if result == value:
+                print(f"Normal_Threshold для {self.name} установлено на {value}")
+
+    def set_threshold_duration_min_over(self, reader):
+        data = self.data
+        value = self._get_random_value(6)
+        data.minOverThresholdDuration = value
+        reader.write(data, 6)
+        actual_threshold_duration_min_over = reader.read(data, 6)
+        if actual_threshold_duration_min_over == value:
+            print(f"MinOverThresholdDuration для {self.name} установлено на {value}")
+
+
+    def set_threshold_duration_min_under(self, reader):
+        data = self.data
+        value = self._get_random_value(7)
+        data.minUnderThresholdDuration = value
+        reader.write(data, 7)
+        actual_threshold_duration_min_under = reader.read(data, 7)
+        if actual_threshold_duration_min_under == value:
+            print(f"MinUnderThresholdDuration для {self.name} установлено на {value}")
+
+    def _get_random_value(self, attribute):
+        if attribute == 4:
+            number_start = self.normal_threshold.value[0]
+            number_stop = self.normal_threshold.value[1]
+        elif attribute == 6:
+            number_start = self.threshold_duration_min_over.value[0]
+            number_stop = self.threshold_duration_min_over.value[1]
+        else:
+            number_start = self.threshold_duration_min_under.value[0]
+            number_stop = self.threshold_duration_min_under.value[1]
+        return randint(number_start, number_stop)
