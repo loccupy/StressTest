@@ -6,9 +6,9 @@ from gurux_dlms import GXUInt8
 from gurux_dlms.objects import GXDLMSRegister, GXDLMSLimiter
 
 class RangeOfValues(Enum):
-    POWER_DATA_TYPE = DataType.UINT8
+    POWER_DATA_TYPE = DataType.INT32
     POWER_NORMAL_THRESHOLD_1PH = [100000, 30000000]# или 0
-    POWER_NORMAL_THRESHOLD_3PH = [100000, 90000000]# или 0UInt32
+    POWER_NORMAL_THRESHOLD_3PH = [100000, 90000000]# или 0
 
     CURRENT_DATA_TYPE = DataType.UINT8
     CURRENT_NORMAL_THRESHOLD = [0, 255]
@@ -17,13 +17,13 @@ class RangeOfValues(Enum):
     VOLTAGE_NORMAL_THRESHOLD = [0, 255]
 
     MAGNETIC_DATA_TYPE = DataType.UINT8
-    MAGNETIC_NORMAL_THRESHOLD = [1, 0]
+    MAGNETIC_NORMAL_THRESHOLD = [0, 1]
 
     IMBALANCE_DATA_TYPE = DataType.UINT16
     IMBALANCE_NORMAL_THRESHOLD = [0, 50]
 
     TEMPERATURE_DATA_TYPE = DataType.INT16
-    TEMPERATURE_NORMAL_THRESHOLD = [0, 50]
+    TEMPERATURE_NORMAL_THRESHOLD = [30, 100]
 
     THRESHOLD_DURATION_MIN_OVER = [0, 7200]
     THRESHOLD_DURATION_MIN_UNDER = [5, 7200]
@@ -33,35 +33,35 @@ class Limiters:
     def __init__(self, obis, meter_type):
         self.obis = obis
         self.data = GXDLMSLimiter(obis)
-        self.threshold_duration_min_over = RangeOfValues.THRESHOLD_DURATION_MIN_OVER
-        self.threshold_duration_min_under = RangeOfValues.THRESHOLD_DURATION_MIN_UNDER
+        self.threshold_duration_min_over = RangeOfValues.THRESHOLD_DURATION_MIN_OVER.value
+        self.threshold_duration_min_under = RangeOfValues.THRESHOLD_DURATION_MIN_UNDER.value
         if obis == "0.0.17.0.0.255":
             self.name = "Ограничитель мощности"
-            self.data_type = RangeOfValues.POWER_DATA_TYPE
+            self.data_type = RangeOfValues.POWER_DATA_TYPE.value
             if meter_type == "1PH":
-                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_1PH
+                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_1PH.value
             else:
-                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_3PH
+                self.normal_threshold = RangeOfValues.POWER_NORMAL_THRESHOLD_3PH.value
         elif obis == "0.0.17.0.1.255":
             self.name = "Ограничитель тока"
-            self.data_type = RangeOfValues.CURRENT_DATA_TYPE
-            self.normal_threshold = RangeOfValues.CURRENT_NORMAL_THRESHOLD
+            self.data_type = RangeOfValues.CURRENT_DATA_TYPE.value
+            self.normal_threshold = RangeOfValues.CURRENT_NORMAL_THRESHOLD.value
         elif obis == "0.0.17.0.2.255":
             self.name = "Ограничитель напряжения"
-            self.data_type = RangeOfValues.VOLTAGE_DATA_TYPE
-            self.normal_threshold = RangeOfValues.VOLTAGE_NORMAL_THRESHOLD
+            self.data_type = RangeOfValues.VOLTAGE_DATA_TYPE.value
+            self.normal_threshold = RangeOfValues.VOLTAGE_NORMAL_THRESHOLD.value
         elif obis == "0.0.17.0.3.255":
             self.name = "Ограничитель по магнитному полю"
-            self.data_type = RangeOfValues.MAGNETIC_DATA_TYPE
-            self.normal_threshold = RangeOfValues.MAGNETIC_NORMAL_THRESHOLD
+            self.data_type = RangeOfValues.MAGNETIC_DATA_TYPE.value
+            self.normal_threshold = RangeOfValues.MAGNETIC_NORMAL_THRESHOLD.value
         elif obis == "0.0.17.0.4.255":
             self.name = "Ограничитель по не балансу токов"
-            self.data_type = RangeOfValues.IMBALANCE_DATA_TYPE
-            self.normal_threshold = RangeOfValues.IMBALANCE_NORMAL_THRESHOLD
+            self.data_type = RangeOfValues.IMBALANCE_DATA_TYPE.value
+            self.normal_threshold = RangeOfValues.IMBALANCE_NORMAL_THRESHOLD.value
         elif obis == "0.0.17.0.5.255":
             self.name = "Ограничитель по температуре"
-            self.data_type = RangeOfValues.TEMPERATURE_DATA_TYPE
-            self.normal_threshold = RangeOfValues.TEMPERATURE_NORMAL_THRESHOLD
+            self.data_type = RangeOfValues.TEMPERATURE_DATA_TYPE.value
+            self.normal_threshold = RangeOfValues.TEMPERATURE_NORMAL_THRESHOLD.value
 
     def read_normal_threshold(self, reader):
         data = self.data
@@ -148,12 +148,12 @@ class Limiters:
 
     def _get_random_value(self, attribute):
         if attribute == 4:
-            number_start = self.normal_threshold.value[0]
-            number_stop = self.normal_threshold.value[1]
+            number_start = self.normal_threshold[0]
+            number_stop = self.normal_threshold[1]
         elif attribute == 6:
-            number_start = self.threshold_duration_min_over.value[0]
-            number_stop = self.threshold_duration_min_over.value[1]
+            number_start = self.threshold_duration_min_over[0]
+            number_stop = self.threshold_duration_min_over[1]
         else:
-            number_start = self.threshold_duration_min_under.value[0]
-            number_stop = self.threshold_duration_min_under.value[1]
+            number_start = self.threshold_duration_min_under[0]
+            number_stop = self.threshold_duration_min_under[1]
         return randint(number_start, number_stop)
