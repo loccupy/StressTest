@@ -1,7 +1,7 @@
 from gurux_serial import GXSerial
 from gurux_net import GXNet
-from libs.GXSettings import GXSettings
-from libs.GXDLMSReader import GXDLMSReader
+from libs.gurux.GXSettings import GXSettings
+from libs.gurux.GXDLMSReader import GXDLMSReader
 
 
 def initialization(com, address, baud, password, ip):
