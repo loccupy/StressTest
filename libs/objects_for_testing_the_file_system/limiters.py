@@ -9,6 +9,16 @@ class Limiters:
 
     def __init__(self, obis, meter_type):
         self.obis = obis
+        self.recorded_values = {
+            "normal_threshold": None,
+            "threshold_duration_min_over": None,
+            "threshold_duration_min_under": None,
+        }
+        self.read_values = {
+            "normal_threshold": None,
+            "threshold_duration_min_over": None,
+            "threshold_duration_min_under": None,
+        }
         self.data = GXDLMSLimiter(obis)
         self.threshold_duration_min_over = RangeOfValues.THRESHOLD_DURATION_MIN_OVER.value
         self.threshold_duration_min_under = RangeOfValues.THRESHOLD_DURATION_MIN_UNDER.value
@@ -43,17 +53,17 @@ class Limiters:
     def read_normal_threshold(self, reader):
         data = self.data
         result = reader.read(data, 4)
-        return result
+        self.read_values["normal_threshold"] = result
 
     def read_threshold_duration_min_over(self, reader):
         data = self.data
         result = reader.read(data, 6)
-        return result
+        self.read_values["threshold_duration_min_over"] = result
 
     def read_threshold_duration_min_under(self, reader):
         data = self.data
         result = reader.read(data, 7)
-        return result
+        self.read_values["threshold_duration_min_under"] = result
 
     def set_normal_threshold(self, reader):
         data = self.data
@@ -69,7 +79,7 @@ class Limiters:
             actual_result = reader.read(data_register, 2)
 
             if actual_result == value:
-                print(f"Уровень лимита по току установлено на {value}%.")
+                print(f"Уровень лимита по току установлено на {value}%.\n")
 
             actual_normal_threshold = reader.read(data, 4)
             maximum_current = reader.read(GXDLMSRegister("1.0.0.6.3.255"), 2)
@@ -77,6 +87,7 @@ class Limiters:
 
             if actual_normal_threshold == result:
                 print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
 
         elif self.obis == "0.0.17.0.2.255":
             data_register = GXDLMSRegister("1.0.12.134.0.255")
@@ -86,7 +97,7 @@ class Limiters:
             actual_result = reader.read(data_register, 2)
 
             if actual_result == value:
-                print(f"Уровень лимита по напряжению установлено на {value}%.")
+                print(f"Уровень лимита по напряжению установлено на {value}%.\n")
 
             actual_normal_threshold = reader.read(data, 4)
             nominal_voltage = reader.read(GXDLMSRegister("1.0.0.6.0.255"), 2)
@@ -94,6 +105,7 @@ class Limiters:
 
             if actual_normal_threshold == result:
                 print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
 
         else:
             data.thresholdNormal = value
@@ -103,6 +115,7 @@ class Limiters:
             result = reader.read(data, 4)
             if result == value:
                 print(f"Normal_Threshold для {self.name} установлено на {value}")
+                self.recorded_values["normal_threshold"] = value
 
     def set_threshold_duration_min_over(self, reader):
         data = self.data
@@ -112,6 +125,7 @@ class Limiters:
         actual_threshold_duration_min_over = reader.read(data, 6)
         if actual_threshold_duration_min_over == value:
             print(f"MinOverThresholdDuration для {self.name} установлено на {value}")
+            self.recorded_values["threshold_duration_min_over"] = value
 
 
     def set_threshold_duration_min_under(self, reader):
@@ -122,6 +136,7 @@ class Limiters:
         actual_threshold_duration_min_under = reader.read(data, 7)
         if actual_threshold_duration_min_under == value:
             print(f"MinUnderThresholdDuration для {self.name} установлено на {value}")
+            self.recorded_values["threshold_duration_min_under"] = value
 
     def _get_random_value(self, attribute):
         if attribute == 4:
