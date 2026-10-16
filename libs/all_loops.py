@@ -7,6 +7,14 @@ from libs.set_parameters import set_limiters
 from libs.write_file import write_file, message_in_out
 
 
+def _header(title):
+    width = 59
+    text_width = width - 1  # минус пробел в начале
+    left = (text_width - len(title)) // 2
+    right = text_width - left - len(title)
+    return f' {"_" * left}{title}{"_" * right}\n'
+
+
 def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconnect,
                         sleep_time_after_reconnect):
     time_correction_log = read_time_correction_log(reader)
@@ -31,19 +39,19 @@ def build_log_text(counter_number, time_for_success, count, sleep_time_after_dis
             f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
             f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
             f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n\n'
-            f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
+            f'{_header("SELF_DIAGNOSTIC_LOGS")}'
             f'{self_diagnostic_logs}\n\n'
-            f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
+            f'{_header("CHECK VOLTAGE PHASE C")}'
             f'{check_phase_for_ozz}\n\n'
-            f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
+            f'{_header("ON/OFF_ACTIVITIES")}'
             f'{on_off_logs}\n\n'
-            f' ____________________TIME CORRECTION LOG_________________________________\n '
+            f'{_header("TIME CORRECTION LOG")}'
             f'{time_correction_log}\n\n'
-            f' ____________________FREE STACK SPACE_________________________________\n '
+            f'{_header("FREE STACK SPACE")}'
             f'{free_stack_space}\n\n'
-            f' _______________________SET_LIMITERS_________________________________\n '
+            f'{_header("SET_LIMITERS")}'
             f'{limiters}\n\n'
-            f'_______________________________________________________________________\n\n\n')
+            f'{'_' * 59}\n\n\n')
 
 
 def loop_after_exception(count, connect, counter_number, device_type,
