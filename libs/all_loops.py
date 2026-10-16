@@ -8,6 +8,7 @@ from libs.write_file import write_file, message_in_out
 
 
 def _header(title):
+    """Возвращает строку-заголовок с выравниванием по центру, обрамлённую символами '_'."""
     width = 59
     text_width = width - 1  # минус пробел в начале
     left = (text_width - len(title)) // 2
@@ -17,6 +18,7 @@ def _header(title):
 
 def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconnect,
                         sleep_time_after_reconnect):
+    """Считывает все логи со счетчика, записывает их в файл и возвращает время успешного чтения."""
     time_correction_log = read_time_correction_log(reader)
     self_diagnostic_logs = read_self_diagnostic_logs(reader)
     check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
@@ -35,6 +37,7 @@ def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconne
 def build_log_text(counter_number, time_for_success, count, sleep_time_after_disconnect,
                    sleep_time_after_reconnect, self_diagnostic_logs, check_phase_for_ozz,
                    on_off_logs, time_correction_log, free_stack_space, limiters):
+    """Собирает текст лога успешного соединения со всеми считанными данными."""
     return (f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
             f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
             f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
@@ -51,12 +54,12 @@ def build_log_text(counter_number, time_for_success, count, sleep_time_after_dis
             f'{free_stack_space}\n\n'
             f'{_header("SET_LIMITERS")}'
             f'{limiters}\n\n'
-            f'{'_' * 59}\n\n\n')
+            f'{'*' * 59}\n\n\n')
 
 
 def loop_after_exception(count, connect, counter_number, device_type,
                          sleep_time_after_disconnect, sleep_time_after_reconnect):
-    number = counter_number
+    """Повторяет подключение до 11 раз после неудачи, логируя попытки на 5-й и 10-й."""
     i = 1
     res = connect
     setting = res[1]
@@ -110,6 +113,7 @@ def loop_after_exception(count, connect, counter_number, device_type,
 
 def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
                        sleep_time_after_reconnect, counter_number, device_type):
+    """Выполняет чтение логов с ведомого счетчика; при i==12 ждёт 10 сек перед подключением."""
     res = connect
     setting = res[1]
     reader = res[0]
@@ -121,7 +125,7 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
         if i == 12:
             sleep(10)
             assert reader.deviceType == device_type
-            time_for_success = read_and_write_logs(reader, counter_number, count,
+            read_and_write_logs(reader, counter_number, count,
                                                    sleep_time_after_disconnect,
                                                    sleep_time_after_reconnect)
             i = 0
@@ -140,12 +144,13 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
             reader.disconnect()
             setting.media.close()
             return i
-    except Exception as e:
+    except Exception:
         setting.media.close()
         raise
 
 
 def main_loop(connect, i, count, sleep_time_after_disconnect, sleep_time_after_reconnect, counter_number, device_type):
+    """Точка входа цикла теста: вызывает slave_counter_loop, при ошибке запускает loop_after_exception."""
     try:
         i = slave_counter_loop(connect, i, count, sleep_time_after_disconnect, sleep_time_after_reconnect,
                                counter_number,
