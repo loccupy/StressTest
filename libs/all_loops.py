@@ -7,6 +7,23 @@ from libs.set_parameters import set_limiters
 from libs.write_file import write_file, message_in_out
 
 
+def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconnect,
+                        sleep_time_after_reconnect):
+    time_correction_log = read_time_correction_log(reader)
+    self_diagnostic_logs = read_self_diagnostic_logs(reader)
+    check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
+    on_off_logs = read_on_off_log(reader)
+    free_stack_space = check_free_stack_space(reader)
+    limiters = set_limiters(reader)
+    time_for_success = str(datetime.datetime.now().replace(microsecond=0))
+
+    write_file(build_log_text(counter_number, time_for_success, count,
+                              sleep_time_after_disconnect, sleep_time_after_reconnect,
+                              self_diagnostic_logs, check_phase_for_ozz,
+                              on_off_logs, time_correction_log, free_stack_space, limiters))
+    return time_for_success
+
+
 def build_log_text(counter_number, time_for_success, count, sleep_time_after_disconnect,
                    sleep_time_after_reconnect, self_diagnostic_logs, check_phase_for_ozz,
                    on_off_logs, time_correction_log, free_stack_space, limiters):
@@ -43,18 +60,9 @@ def loop_after_exception(count, connect, counter_number, device_type,
             reader.initializeConnection()
             assert reader.deviceType == device_type
             sleep(10)
-            time_correction_log = read_time_correction_log(reader)
-            self_diagnostic_logs = read_self_diagnostic_logs(reader)
-            check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
-            on_off_logs = read_on_off_log(reader)
-            free_stack_space = check_free_stack_space(reader)
-            limiters = set_limiters(reader)
-            time_for_success = str(datetime.datetime.now().replace(microsecond=0))
-
-            write_file(build_log_text(counter_number, time_for_success, count,
-                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
-                                      self_diagnostic_logs, check_phase_for_ozz,
-                                      on_off_logs, time_correction_log, free_stack_space, limiters))
+            time_for_success = read_and_write_logs(reader, counter_number, count,
+                                                   sleep_time_after_disconnect,
+                                                   sleep_time_after_reconnect)
 
             message_in_out(
                 f'>> Удачное соединение после {i}-го неудачного. Реальное время: {time_for_success}')
@@ -98,49 +106,28 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
     setting = res[1]
     reader = res[0]
     try:
+        if not setting.media.isOpen():
+            setting.media.open()
+        reader.initializeConnection()
+
         if i == 12:
             sleep(10)
-            if not setting.media.isOpen():
-                setting.media.open()
-            reader.initializeConnection()
             assert reader.deviceType == device_type
-            time_correction_log = read_time_correction_log(reader)
-            self_diagnostic_logs = read_self_diagnostic_logs(reader)
-            check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
-            on_off_logs = read_on_off_log(reader)
-            free_stack_space = check_free_stack_space(reader)
-            limiters = set_limiters(reader)
-            time_for_success = str(datetime.datetime.now().replace(microsecond=0))
-
-            write_file(build_log_text(counter_number, time_for_success, count,
-                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
-                                      self_diagnostic_logs, check_phase_for_ozz,
-                                      on_off_logs, time_correction_log, free_stack_space, limiters))
+            time_for_success = read_and_write_logs(reader, counter_number, count,
+                                                   sleep_time_after_disconnect,
+                                                   sleep_time_after_reconnect)
             i = 0
             reader.disconnect()
             setting.media.close()
         else:
-            if not setting.media.isOpen():
-                setting.media.open()
-            reader.initializeConnection()
             if reader.deviceType != device_type:
                 write_file(f'>> ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ\n'
                            f'___________________________________________________________\n\n')
                 reader.close()
                 raise Exception("ТИП СЧЕТЧИКА НЕ СООТВЕТСТВУЕТ")
 
-            time_correction_log = read_time_correction_log(reader)
-            on_off_logs = read_on_off_log(reader)
-            self_diagnostic_logs = read_self_diagnostic_logs(reader)
-            check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
-            free_stack_space = check_free_stack_space(reader)
-            limiters = set_limiters(reader)
-            time_for_success = str(datetime.datetime.now().replace(microsecond=0))
-
-            write_file(build_log_text(counter_number, time_for_success, count,
-                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
-                                      self_diagnostic_logs, check_phase_for_ozz,
-                                      on_off_logs, time_correction_log, free_stack_space, limiters))
+            read_and_write_logs(reader, counter_number, count,
+                                sleep_time_after_disconnect, sleep_time_after_reconnect)
 
             reader.disconnect()
             setting.media.close()
