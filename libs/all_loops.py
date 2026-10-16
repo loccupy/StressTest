@@ -7,7 +7,30 @@ from libs.set_parameters import set_limiters
 from libs.write_file import write_file, message_in_out
 
 
-def loop_after_exception(count, connect, counter_number, device_type):
+def build_log_text(counter_number, time_for_success, count, sleep_time_after_disconnect,
+                   sleep_time_after_reconnect, self_diagnostic_logs, check_phase_for_ozz,
+                   on_off_logs, time_correction_log, free_stack_space, limiters):
+    return (f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
+            f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
+            f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
+            f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n\n'
+            f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
+            f'{self_diagnostic_logs}\n\n'
+            f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
+            f'{check_phase_for_ozz}\n\n'
+            f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
+            f'{on_off_logs}\n\n'
+            f' ____________________TIME CORRECTION LOG_________________________________\n '
+            f'{time_correction_log}\n\n'
+            f' ____________________FREE STACK SPACE_________________________________\n '
+            f'{free_stack_space}\n\n'
+            f' _______________________SET_LIMITERS_________________________________\n '
+            f'{limiters}\n\n'
+            f'_______________________________________________________________________\n\n\n')
+
+
+def loop_after_exception(count, connect, counter_number, device_type,
+                         sleep_time_after_disconnect, sleep_time_after_reconnect):
     number = counter_number
     i = 1
     res = connect
@@ -28,23 +51,10 @@ def loop_after_exception(count, connect, counter_number, device_type):
             limiters = set_limiters(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
-            write_file(f'>> Удачное соединение после {i}-го неудачного c № {number} \n'
-                       f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
-                       f' Считываем логи журнала самодиагностики после ожидания в 10 сек\n'
-                       f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
-                       f'{self_diagnostic_logs}\n\n'
-                       f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
-                       f'{check_phase_for_ozz}\n\n'
-                       f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
-                       f'{on_off_logs}\n\n'
-                       f' ____________________TIME CORRECTION LOG_________________________________\n '
-                       f'{time_correction_log}\n'
-                       f' ____________________FREE STACK SPACE_________________________________\n '
-                       f'{free_stack_space}\n'
-                       f' _______________________SET_LIMITERS_________________________________\n '
-                       f'{limiters}\n'
-                       f'_______________________________________________________________________\n\n\n\n'
-                       )
+            write_file(build_log_text(counter_number, time_for_success, count,
+                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
+                                      self_diagnostic_logs, check_phase_for_ozz,
+                                      on_off_logs, time_correction_log, free_stack_space, limiters))
 
             message_in_out(
                 f'>> Удачное соединение после {i}-го неудачного. Реальное время: {time_for_success}')
@@ -102,26 +112,10 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
             limiters = set_limiters(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
-            write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
-                       f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
-                       f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
-                       f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
-                       f' Считываем логи журнала самодиагностики после ожидания в 10 сек (после цикла в 11 '
-                       f'неудачных подключений)\n'
-                       f'_________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
-                       f'{self_diagnostic_logs}\n\n'
-                       f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
-                       f'{check_phase_for_ozz}\n\n'
-                       f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
-                       f'{on_off_logs}\n\n'
-                       f' ____________________TIME CORRECTION LOG_________________________________\n '
-                       f'{time_correction_log}\n'
-                       f' ____________________FREE STACK SPACE_________________________________\n '
-                       f'{free_stack_space}\n'
-                       f' _______________________SET_LIMITERS_________________________________\n '
-                       f'{limiters}\n'
-                       f'_______________________________________________________________________\n\n\n\n'
-                       )
+            write_file(build_log_text(counter_number, time_for_success, count,
+                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
+                                      self_diagnostic_logs, check_phase_for_ozz,
+                                      on_off_logs, time_correction_log, free_stack_space, limiters))
             i = 0
             reader.disconnect()
             setting.media.close()
@@ -143,24 +137,10 @@ def slave_counter_loop(connect, i, count, sleep_time_after_disconnect,
             limiters = set_limiters(reader)
             time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
-            write_file(f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
-                       f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
-                       f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
-                       f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n'
-                       f' _________________SELF_DIAGNOSTIC_LOGS_________________________________\n '
-                       f'{self_diagnostic_logs}\n\n'
-                       f' _________________CHECK VOLTAGE PHASE C_________________________________\n '
-                       f'{check_phase_for_ozz}\n\n'
-                       f' ____________________ON/OFF_ACTIVITIES_________________________________\n '
-                       f'{on_off_logs}\n\n'
-                       f' ____________________TIME CORRECTION LOG_________________________________\n '
-                       f'{time_correction_log}\n'
-                       f' ____________________FREE STACK SPACE_________________________________\n '
-                       f'{free_stack_space}\n'
-                       f' _______________________SET_LIMITERS_________________________________\n '
-                       f'{limiters}\n'
-                       f'_______________________________________________________________________\n\n\n\n'
-                       )
+            write_file(build_log_text(counter_number, time_for_success, count,
+                                      sleep_time_after_disconnect, sleep_time_after_reconnect,
+                                      self_diagnostic_logs, check_phase_for_ozz,
+                                      on_off_logs, time_correction_log, free_stack_space, limiters))
 
             reader.disconnect()
             setting.media.close()
@@ -194,5 +174,6 @@ def main_loop(connect, i, count, sleep_time_after_disconnect, sleep_time_after_r
         message_in_out(
             f'Соединение не установлено!Ошибка >> {error_1}\n Реальное время: {time_1}\n Итерация выкл/вкл №{count}')
 
-        i = loop_after_exception(count, connect, counter_number, device_type)
+        i = loop_after_exception(count, connect, counter_number, device_type,
+                                 sleep_time_after_disconnect, sleep_time_after_reconnect)
     return i
