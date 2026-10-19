@@ -81,15 +81,20 @@ class Limiters:
             if actual_result == value:
                 print(f"Уровень лимита по току установлено на {value}%.\n")
 
-            actual_normal_threshold = reader.read(data, 4)
-            self.recorded_values["normal_threshold"] = actual_normal_threshold
-            maximum_current = reader.read(GXDLMSRegister("1.0.0.6.3.255"), 2)
-            expected = maximum_current * value / 100
+                actual_normal_threshold = reader.read(data, 4)
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
+                maximum_current = reader.read(GXDLMSRegister("1.0.0.6.3.255"), 2)
+                expected = maximum_current * value / 100
 
-            if actual_normal_threshold == expected:
-                print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                if actual_normal_threshold == expected:
+                    print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                else:
+                    print(f"Normal_Threshold для {self.name} = {actual_normal_threshold} не совпало с ожидаемым {expected} (процент={value}% от макс. тока {maximum_current})")
             else:
-                print(f"Normal_Threshold для {self.name} = {actual_normal_threshold} не совпало с ожидаемым {expected} (процент={value}% от макс. тока {maximum_current})")
+                print(f"Уровень лимита по току не удалось установить на {value}%.\n")
+
+                actual_normal_threshold = reader.read(data, 4)
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
 
         elif self.obis == "0.0.17.0.2.255":
             data_register = GXDLMSRegister("1.0.12.134.0.255")
@@ -101,16 +106,20 @@ class Limiters:
             if actual_result == value:
                 print(f"Уровень лимита по напряжению установлено на {value}%.\n")
 
-            actual_normal_threshold = reader.read(data, 4)
-            self.recorded_values["normal_threshold"] = actual_normal_threshold
-            nominal_voltage = reader.read(GXDLMSRegister("1.0.0.6.0.255"), 2)
-            expected = nominal_voltage * value / 100
+                actual_normal_threshold = reader.read(data, 4)
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
+                nominal_voltage = reader.read(GXDLMSRegister("1.0.0.6.0.255"), 2)
+                expected = nominal_voltage * value / 100
 
-            if actual_normal_threshold == expected:
-                print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                if actual_normal_threshold == expected:
+                    print(f"Normal_Threshold для {self.name} установлено на {actual_normal_threshold}")
+                else:
+                    print(f"Normal_Threshold для {self.name} = {actual_normal_threshold} не совпало с ожидаемым {expected} (процент={value}% от ном. напряжения {nominal_voltage})")
             else:
-                print(f"Normal_Threshold для {self.name} = {actual_normal_threshold} не совпало с ожидаемым {expected} (процент={value}% от ном. напряжения {nominal_voltage})")
+                print(f"Уровень лимита по напряжению не удалось установить на {value}%.\n")
 
+                actual_normal_threshold = reader.read(data, 4)
+                self.recorded_values["normal_threshold"] = actual_normal_threshold
         else:
             data.thresholdNormal = value
             data.setDataType(4, data_type)
