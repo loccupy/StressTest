@@ -3,7 +3,7 @@ from time import sleep
 
 from libs.read_log import (read_time_correction_log, read_self_diagnostic_logs,
                            read_on_off_log, read_voltage_of_any_phase_for_ozz, check_free_stack_space)
-from libs.set_parameters import set_limiters, verify_limiters, read_and_compare_limiters
+from libs.set_parameters import set_limiters, verify_limiters
 from libs.write_file import write_file, message_in_out
 
 
@@ -23,17 +23,17 @@ def write_and_verify_limiters(reader):
     запись в прибор):
       1) после выключения/включения реле заново считывает лимитеры и сверяет их с
          значениями, записанными в прошлом цикле, — проверка сохранности после
-         power-cycle. Делается ДО set_limiters, иначе _store.recorded уже
+         power-cycle: verify_limiters(reader, phase="after_cycle"). Делается ДО set_limiters, иначе _store.recorded уже
          перезапишется текущими значениями и сравнивать будет не с чем;
       2) записывает лимитеры (set_limiters);
-      3) сверяет только что записанное read-back (verify_limiters).
+      3) сверяет только что записанное read-back: verify_limiters(reader, phase="readback").
 
     Возвращает тройку строк для лога:
     (сохранность_после_выкл_вкл, результат_записи, результат_сверки_записи).
     """
-    limiters_after_cycle = read_and_compare_limiters(reader)
+    limiters_after_cycle = verify_limiters(reader, phase="after_cycle")
     limiters = set_limiters(reader)
-    limiters_verify = verify_limiters(reader)
+    limiters_verify = verify_limiters(reader, phase="readback")
     return limiters_after_cycle, limiters, limiters_verify
 
 
