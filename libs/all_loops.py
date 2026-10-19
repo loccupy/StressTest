@@ -3,7 +3,7 @@ from time import sleep
 
 from libs.read_log import (read_time_correction_log, read_self_diagnostic_logs,
                            read_on_off_log, read_voltage_of_any_phase_for_ozz, check_free_stack_space)
-from libs.set_parameters import set_limiters, verify_limiters
+from libs.set_parameters import set_limiters, verify_limiters, read_and_compare_limiters
 from libs.write_file import write_file, message_in_out
 
 
@@ -16,6 +16,27 @@ def _header(title):
     return f' {"_" * left}{title}{"_" * right}\n'
 
 
+def write_and_verify_limiters(reader):
+    """Операции с записью в счётчик и проверкой записи.
+
+    Выполняет три операции, отделённые от чтения журналов (здесь идёт единственная
+    запись в прибор):
+      1) после выключения/включения реле заново считывает лимитеры и сверяет их с
+         значениями, записанными в прошлом цикле, — проверка сохранности после
+         power-cycle. Делается ДО set_limiters, иначе _store.recorded уже
+         перезапишется текущими значениями и сравнивать будет не с чем;
+      2) записывает лимитеры (set_limiters);
+      3) сверяет только что записанное read-back (verify_limiters).
+
+    Возвращает тройку строк для лога:
+    (сохранность_после_выкл_вкл, результат_записи, результат_сверки_записи).
+    """
+    limiters_after_cycle = read_and_compare_limiters(reader)
+    limiters = set_limiters(reader)
+    limiters_verify = verify_limiters(reader)
+    return limiters_after_cycle, limiters, limiters_verify
+
+
 def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconnect,
                         sleep_time_after_reconnect):
     """Считывает все логи со счетчика, записывает их в файл и возвращает время успешного чтения."""
@@ -24,37 +45,38 @@ def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconne
     check_phase_for_ozz = read_voltage_of_any_phase_for_ozz(reader)
     on_off_logs = read_on_off_log(reader)
     free_stack_space = check_free_stack_space(reader)
-    limiters = set_limiters(reader)
-    limiters_verify = verify_limiters(reader)
+    limiters_after_cycle, limiters, limiters_verify = write_and_verify_limiters(reader)
     time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
     write_file(build_log_text(counter_number, time_for_success, count,
                               sleep_time_after_disconnect, sleep_time_after_reconnect,
                               self_diagnostic_logs, check_phase_for_ozz,
-                              on_off_logs, time_correction_log, free_stack_space, limiters,
-                              limiters_verify))
+                              on_off_logs, time_correction_log, free_stack_space,
+                              limiters_after_cycle, limiters, limiters_verify))
     return time_for_success
 
 
 def build_log_text(counter_number, time_for_success, count, sleep_time_after_disconnect,
                    sleep_time_after_reconnect, self_diagnostic_logs, check_phase_for_ozz,
-                   on_off_logs, time_correction_log, free_stack_space, limiters,
-                   limiters_verify):
+                   on_off_logs, time_correction_log, free_stack_space,
+                   limiters_after_cycle, limiters, limiters_verify):
     """Собирает текст лога успешного соединения со всеми считанными данными."""
     return (f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
             f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
             f' Время ожидания после дисконнекта >> {sleep_time_after_disconnect}\n'
             f' Время ожидания после реконнекта >> {sleep_time_after_reconnect}\n\n'
-            f'{_header("SELF_DIAGNOSTIC_LOGS")}'
-            f'{self_diagnostic_logs}\n\n'
-            f'{_header("CHECK VOLTAGE PHASE C")}'
-            f'{check_phase_for_ozz}\n\n'
-            f'{_header("ON/OFF_ACTIVITIES")}'
-            f'{on_off_logs}\n\n'
-            f'{_header("TIME CORRECTION LOG")}'
-            f'{time_correction_log}\n\n'
+            # f'{_header("SELF_DIAGNOSTIC_LOGS")}'
+            # f'{self_diagnostic_logs}\n\n'
+            # f'{_header("CHECK VOLTAGE PHASE C")}'
+            # f'{check_phase_for_ozz}\n\n'
+            # f'{_header("ON/OFF_ACTIVITIES")}'
+            # f'{on_off_logs}\n\n'
+            # f'{_header("TIME CORRECTION LOG")}'
+            # f'{time_correction_log}\n\n'
             f'{_header("FREE STACK SPACE")}'
             f'{free_stack_space}\n\n'
+            f'{_header("LIMITERS_AFTER_ON_OFF")}'
+            f'{limiters_after_cycle}\n\n'
             f'{_header("SET_LIMITERS")}'
             f'{limiters}\n\n'
             f'{_header("VERIFY_LIMITERS")}'
