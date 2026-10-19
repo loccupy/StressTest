@@ -3,7 +3,7 @@ from time import sleep
 
 from libs.read_log import (read_time_correction_log, read_self_diagnostic_logs,
                            read_on_off_log, read_voltage_of_any_phase_for_ozz, check_free_stack_space)
-from libs.set_parameters import set_limiters
+from libs.set_parameters import set_limiters, verify_limiters
 from libs.write_file import write_file, message_in_out
 
 
@@ -25,18 +25,21 @@ def read_and_write_logs(reader, counter_number, count, sleep_time_after_disconne
     on_off_logs = read_on_off_log(reader)
     free_stack_space = check_free_stack_space(reader)
     limiters = set_limiters(reader)
+    limiters_verify = verify_limiters(reader)
     time_for_success = str(datetime.datetime.now().replace(microsecond=0))
 
     write_file(build_log_text(counter_number, time_for_success, count,
                               sleep_time_after_disconnect, sleep_time_after_reconnect,
                               self_diagnostic_logs, check_phase_for_ozz,
-                              on_off_logs, time_correction_log, free_stack_space, limiters))
+                              on_off_logs, time_correction_log, free_stack_space, limiters,
+                              limiters_verify))
     return time_for_success
 
 
 def build_log_text(counter_number, time_for_success, count, sleep_time_after_disconnect,
                    sleep_time_after_reconnect, self_diagnostic_logs, check_phase_for_ozz,
-                   on_off_logs, time_correction_log, free_stack_space, limiters):
+                   on_off_logs, time_correction_log, free_stack_space, limiters,
+                   limiters_verify):
     """Собирает текст лога успешного соединения со всеми считанными данными."""
     return (f'>> Соединение с ведомым счетчиком № {counter_number} установлено!!! \n'
             f' Реальное время: {time_for_success} >> Итерация выкл/вкл №{count}\n'
@@ -54,6 +57,8 @@ def build_log_text(counter_number, time_for_success, count, sleep_time_after_dis
             f'{free_stack_space}\n\n'
             f'{_header("SET_LIMITERS")}'
             f'{limiters}\n\n'
+            f'{_header("VERIFY_LIMITERS")}'
+            f'{limiters_verify}\n\n'
             f'{'*' * 59}\n\n\n')
 
 
